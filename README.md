@@ -67,12 +67,9 @@ airmo-test-setup/
 │  └─ middleware/           # USB CDC, FATFS, etc.
 ├─ hardware/
 │  ├─ diagrams/             # Block diagrams (PNG, Mermaid)
-│  ├─ wiring/               # Pin mapping tables
-│  └─ BOM.csv               # Bill of Materials
-├─ tools/
-│  └─ laptop_logger/        # PC-side data capture script
-└─ tests/
-   └─ sample_logs/          # Example recorded data
+│  ├─ wiring/               # Pin mapping tables :Not Prepared
+│  └─ BOM.csv               # Bill of Materials : Added in document
+
 ```
 
 ---
@@ -85,7 +82,6 @@ airmo-test-setup/
 - High‑rate IMU acquisition
 - GNSS NMEA parsing
 - Accurate timestamping
-- USB CDC streaming
 - Optional SD card logging
 
 ### Build Environment
@@ -107,14 +103,9 @@ The STM32 enumerates as a **USB virtual COM port**.
 
 Typical workflow:
 1. Connect STM32 to laptop
-2. Identify COM port (`/dev/ttyACM*` or `COMx`)
+2. Identify COM port 
 3. Run the logger script in `tools/laptop_logger/`
 4. Data is saved directly to laptop storage
-
-Example (Linux):
-```bash
-python3 logger.py /dev/ttyACM0
-```
 
 ---
 
