@@ -1,0 +1,173 @@
+
+
+	         TASK for embedded software
+		         Preparation of Device R-Airmo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+________________________________________
+1. Introduction
+This document presents a complete solution for the AIRMO airplane test campaign environmental data acquisition system. The objective is to reliably measure, timestamp, record, and transmit environmental conditions during flight testing prior to satellite deployment. The proposed system follows the constraints defined in the task description: only commercially available modules are used, no custom PCB design, power supplied via USB, and data delivered to a laptop for storage and analysis.
+________________________________________
+2. System Overview
+The test setup is centered around an STM32 development board acting as the control unit. It interfaces with multiple sensors to measure environmental and flight-related parameters and streams synchronized data to a laptop via USB.
+Measured Parameters
+•	Temperature, pressure, humidity
+•	6‑axis acceleration, gyro
+•	3‑axis magnetic field
+•	GPS coordinates (latitude, longitude, altitude)
+•	Accurate time (UTC)
+________________________________________
+3. Component Selection and Justification
+3.1 Control Unit
+STM32 Nucleo 
+Chosen for its real‑time performance, rich peripheral set (I2C, SPI, UART, USB), robust HAL support, and suitability for deterministic sensor acquisition. USB CDC allows simple and reliable communication with a laptop.
+________________________________________
+3.2 Sensors
+BME150 – Environmental Sensor
+•	Measures temperature, pressure, humidity
+•	Interface: I2C
+•	Rationale: Compact, low‑power, accurate, and widely used. Temperature measurement is critical due to temperature‑sensitive test equipment.
+ICM‑20948 – IMU
+•	Measures acceleration, angular rate, and magnetic field
+•	Interface: I2C or SPI
+•	Rationale: Single‑chip solution for acceleration and magnetic field measurements required by the task. Useful for vibration and orientation analysis during flight.
+u‑blox NEO‑6M  – GNSS Receiver
+•	Measures GPS coordinates and UTC time
+•	Interface: UART (+ PPS)
+•	Rationale: High sensitivity, aviation‑proven reliability, and accurate time reference when flight provider GPS is unavailable.
+DS3231 – Real‑Time Clock (RTC)
+•	Battery‑backed, temperature‑compensated RTC
+•	Interface: I2C
+•	Rationale: Maintains accurate time when GNSS signal is temporarily unavailable.
+________________________________________
+3.3 Optional Modules
+•	microSD Card Module (SPI): Local backup logging to prevent data loss during USB interruptions.
+________________________________________
+
+4. Functional Architecture
+ 
+4.1 Diagram for Red box
+Red Box in above image is presented as Device R-AIRMO in this document completely:
+The Test components for Device R- AIRMO are provided below:
+1.	Recommended to Record and save data on laptop mass storage:
+2.	Power Supply to Test device is provided from Laptop 5v supply: Limitations: 3.3V supply to board and 1A current.
+3.	Power supply to Sensors is also provided from Laptop USB supply.
+S. No	Sensor	Part No
+1	Microcontroller	STM Nucleo
+2	Accelero and gyro	ICM20948
+3	Temp, pressure, humidity	BME 150 
+4	GPS	NEO 6M
+5	RTC	DS3231
+6	Data transfer, Power regulator	RS232/ MAX232
+
+
+Architectural / functional Diagram:
+
+ 
+
+
+________________________________________
+5. Data Flow and Operation
+1.	Sensors are sampled at predefined rates (IMU high‑rate, environment low‑rate).
+2.	Each measurement is time-stamped using RTC and GNSS UTC.
+3.	Data packets are formatted (CSV or binary).
+4.	Data is transmitted to the laptop via USB.
+5.	Optional backup logging to microSD card.
+________________________________________
+6. Bill of Materials (BOM)
+Component	Part Number	Quantity	Comment
+STM32 Nucleo Board	NUCLEO	1	Main controller
+GNSS Module	u‑blox NEO‑6M	1	GPS + time
+Environmental Sensor	BME280	1	Temperature/Pressure/Humidity
+IMU	ICM‑20948	1	Acceleration & Magnetic field
+RTC	DS3231	1	Backup time
+USB Cable	USB‑A / Micro‑B	1	Power & data
+________________________________________
+7. Development Plan
+Estimated Effort
+Phase	Duration
+Design & procurement	2 weeks
+Hardware integration	2 weeks
+Firmware development	3 weeks
+Integration & testing	1 week
+Documentation & delivery	1 week
+Total: 8–9 weeks
+________________________________________
+8. Firmware Overview
+•	STM32 HAL‑based firmware
+•	Interfaces: I2C, SPI, UART
+•	Periodic sensor polling
+•	Time synchronization via RTC and GNSS
+•	Streaming on a laptop
+(Sample C code is provided in the accompanying GitHub repository.)
+________________________________________
+9. Conclusion
+The proposed STM32‑based test setup satisfies all AIRMO test campaign requirements. It uses reliable, readily available components, provides accurate environmental and positional data, and ensures robust data recording for post‑flight analysis. The architecture is scalable and directly transferable to future satellite payload development.
+________________________________________
+10) References & datasheets (selected)
+•	STM32 Nucleo boards info — ST Microelectronics. NUCLEO-F767ZI | Product - STMicroelectronics
+•	u-blox NEO-M8 series datasheet & module pages. https://www.u-blox.com/en/product/neo-m8-series
+
+•	BME280 datasheet. https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
+•	ICM-20948 datasheet (TDK InvenSense). AN-000121 – TDK InvenSense Motion Evaluation Guide | TDK InvenSense
+•	DS3231 RTC datasheet. ds3231.pdf
+
+________________________________________
+11) Functional descriptions & data flow
+•	Sampling & timestamps
+STM32 runs a scheduler (FreeRTOS suggested) or interrupts/timers: sample IMU at 100–400 Hz (depending on campaign needs), sample BME280 at 1 Hz (environment), poll GNSS via UART 1 Hz (or higher if configured). Use DS3231 as backup RTC; GNSS provides absolute UTC and PPS for precise timestamps.
+Data formatting
+•	Binary or lightweight ASCII CSV records with ISO8601 UTC time or epoch. For high-rate IMU, use binary frames with header, timestamp (uint64_t us since epoch), sensor ID, payload, CRC.
+•	Transmission
+Primary: Via Uart Send data to laptop (Rs232)
+•	Persistence
+Write to microSD in parallel to streaming to avoid data loss during USB disconnects.
+________________________________________
+12) Bill of Materials (BOM) parts, suggested suppliers, datasheets, qty, comments
+I list commonly available modules/parts. 
+1.	STM32 Nucleo Board (control unit)
+o	Example: NUCLEO-F767ZI (STM32F767ZI MCU, Arduino connectors, ST-LINK).
+o	Supplier / datasheet: ST Nucleo boards page. 
+o	Quantity: 1
+o	Comment: Supports USB; can be used with CubeMX, HAL
+2.	u-blox NEO-M8N GNSS module (module w/ antenna)
+o	Example product pages: u-blox NEO-M8 series datasheet / Mouser listing for NEO-M8N. 
+o	Quantity: 1
+o	Comment: UART interface; includes PPS signal; requires active antenna.
+3.	Bosch BME280 (environment sensor breakout module)
+o	Supplier/Datasheet: Bosch BME280 datasheet / Mouser listing. 
+o	Quantity: 1
+o	Comment: I²C address can be configured; measures temp, pressure, humidity.
+4.	TDK InvenSense ICM-20948 (9-axis IMU breakout)
+o	Datasheet / supplier: ICM-20948 datasheet / distributor listing (Digikey/Mouser). 
+o	Quantity: 1
+o	Comment: Use I²C or SPI. Use SPI if bus congestion or sampling rate needs to be maximized.
+5.	DS3231 RTC module
+o	Datasheet: DS3231 datasheet (Analog Devices / Maxim). 
+o	Quantity: 1
+6.	Cables & antenna
+o	USB A->Micro-B or USB C cable for power/data to laptop.
+o	GNSS active antenna with SMA connector.
+7.	Power supply
+o	Use laptop USB 5V; optionally add a small DC/DC 5V→3.3V regulator if needed for external modules.
+________________________________________
+
