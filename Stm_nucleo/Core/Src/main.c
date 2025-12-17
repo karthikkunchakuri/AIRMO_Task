@@ -126,6 +126,7 @@ int main(void)
             int len = snprintf(out, sizeof(out), "ENV,%.2f,%.2f,%.2f\r\n", temperature, pressure, humidity);
             
         }
+       //Read ICM data for all axis and gps data every 1ms
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -475,4 +476,5 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
 
