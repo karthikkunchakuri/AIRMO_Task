@@ -127,6 +127,17 @@ int main(void)
             
         }
        //Read ICM data for all axis and gps data every 1ms
+        char nmea[GPS_BUFFER_SIZE];
+        GPS_ReadLine(nmea, GPS_BUFFER_SIZE);
+        
+        ICM20948_Accel_t accel;
+        ICM20948_ReadAccel(&accel);
+
+        char msg[128];
+        snprintf(msg, sizeof(msg),"ACC,%d,%d,%d\r\n",accel.ax, accel.ay, accel.az);
+
+
+   
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -476,5 +487,6 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
 
 
