@@ -117,7 +117,15 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+        int16_t temp_raw=0; uint32_t press_raw=0; int32_t hum_raw=0;
+        if (bme_read_raw(&temp_raw, &press_raw, &hum_raw) == 0) {
+            // Convert raw values to human units (placeholder scaling)
+            float temperature = temp_raw / 100.0f;
+            float pressure = press_raw / 256.0f / 100.0f; // hPa
+            float humidity = hum_raw / 1024.0f;
+            int len = snprintf(out, sizeof(out), "ENV,%.2f,%.2f,%.2f\r\n", temperature, pressure, humidity);
+            
+        }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -467,3 +475,4 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
